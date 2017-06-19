@@ -1,5 +1,6 @@
-# keep.py - Metallurgeek - May 2017
+# keep.py - Metallurgeek - June 2017
 import sys
+import signal
 import argparse
 
 # Parse
@@ -9,19 +10,19 @@ parser.add_argument("--mini", type=int, help="minimum length")
 parser.add_argument("--maxi", type=int, help="maximum length")
 args = parser.parse_args()
 
+# Prepare
 if   args.mini == args.maxi == None: parser.print_help(); exit()
 elif args.maxi == None:              case = 1 # keep longer than mini
 elif args.mini == None:              case = 2 # keep shorter than maxi
 elif args.mini <= args.maxi:         case = 3 # keep between mini and maxi
 elif args.mini  > args.maxi:         case = 4 # keep except between mini and maxi
     
-# Prepare
-line = sys.stdin.readline().strip() # read line by line (for huge files)
+signal.signal(signal.SIGPIPE,signal.SIG_DFL) # Avoid broken pipe error
 
 # Search
-while line: # stop on empty line
+for line in sys.stdin:
 
-  long = len(line)
+  long = len(line) - 1
   
   if ((case == 1) and (long >= args.mini))                         \
   or ((case == 2) and (long <= args.maxi))                         \
@@ -29,5 +30,4 @@ while line: # stop on empty line
   or ((case == 4) and ((args.maxi >= long) or (args.mini <= long))):
     sys.stdout.write(line+"\n")
 
-  line = sys.stdin.readline().strip() # read line by line
 
