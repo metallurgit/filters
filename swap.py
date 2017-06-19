@@ -1,5 +1,6 @@
-# swap.py - Metallurgeek - May 2017
+# swap.py - Metallurgeek - June 2017
 import sys
+import signal
 import argparse
 
 # Parse
@@ -11,13 +12,13 @@ help =        "Column numbers, e.g. 3 2 1", type = int, nargs = "+")
 args = parser.parse_args()
 
 # Prepare
+signal.signal(signal.SIGPIPE,signal.SIG_DFL) # Avoid broken pipe error
 skip = 0 # Count skipped lines
-line = sys.stdin.readline().strip() # Read line by line (for huge files)
 
 # Search
-while line: # stop on empty line
+for line in sys.stdin:
 
-  data = line.split('	') # FIXME: handle exceptions
+  data = line[:-1].split('	')
 
   if len(data) < len(args.cols):
     skip += 1 # too bad, not enough columns
@@ -27,8 +28,7 @@ while line: # stop on empty line
       lout += data[acol-1] + '	'
     sys.stdout.write(lout[:-1] + '\n')
 
-  line = sys.stdin.readline().strip() # Read line by line (for huge files)
-
+# Result
 if skip > 0:
   sys.stderr.write(str(skip)+' lines skiped')
 
